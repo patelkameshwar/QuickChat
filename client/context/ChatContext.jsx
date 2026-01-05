@@ -45,6 +45,15 @@ export const ChatProvider = ({ children })=>{
             const { data } = await axios.post(`/api/messages/send/${selectedUser._id}`, messageData);
             if (data.success){
                 setMessages((prevMessages)=>[...prevMessages, data.newMessage])
+
+                      // 🔥 NEW CODE ADDED: move chat to the top in sidebar after sending message
+                setUsers((prev)=> {
+                    const updated = prev.filter(u => u._id !== selectedUser._id); 
+                    return [selectedUser, ...updated]; 
+                });
+
+                // above
+
             } else{
                 toast.error(data.message);
             }
@@ -67,6 +76,17 @@ export const ChatProvider = ({ children })=>{
                     ...prevUnseenMessages, [newMessage.senderId] : prevUnseenMessages[newMessage.senderId] ? prevUnseenMessages[newMessage.senderId] + 1 : 1
                 }))
             }
+
+            // NEW CODE ADDED: When receiving a message, move sender to top
+            setUsers((prev)=>{
+                const sender = prev.find(u => u._id === newMessage.senderId);
+                if(!sender) return prev;  
+                const updated = prev.filter(u => u._id !== sender._id);
+                return [sender, ...updated]; 
+            });
+
+            //above
+
         })
     }
 
